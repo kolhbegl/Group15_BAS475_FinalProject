@@ -73,3 +73,10 @@ rmse <- function(y_actual, y_pred) {
 }
 
 rmse(holdout$credit_in_millions, y_pred$.mean)
+
+Empire_Credits %>% model(
+  ETSmodel = ETS(credit_in_millions)) -> bestfit1
+
+bestfit1 %>% 
+  forecast(h=12)
+
