@@ -36,6 +36,7 @@ training <- Empire_Credits %>%
 training %>% 
   stretch_tsibble(.init = 48, .step = 24) %>% 
   model(
+        arima111110 = ARIMA(credit_in_millions ~ pdq(1,1,1) + PDQ(1,1,0)),
         arima210 = ARIMA(credit_in_millions ~ pdq(2,1,0)),
         arima110 = ARIMA(credit_in_millions ~ pdq(1,1,0)),
         arima310 = ARIMA(credit_in_millions ~ pdq(3,1,0)),
@@ -43,6 +44,7 @@ training %>%
         ETSmodel = ETS(credit_in_millions)) %>% 
   forecast(h=12) %>% 
   accuracy(training) -> training_cv
+
 
 training_cv %>% 
   arrange(RMSE)

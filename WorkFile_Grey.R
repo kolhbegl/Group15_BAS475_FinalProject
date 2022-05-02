@@ -3,7 +3,6 @@ library(feasts)
 library(lubridate)
 
 Credits <- read.csv("credit.csv")
-colnames(Credits)[1] <- gsub('^...','',colnames(Credits)[1])
 
 
 Credits %>% 
@@ -83,7 +82,7 @@ rmse <- function(preds, untransformed_preds) {
 }
 
 
-RMSE(untransformed_preds,TRAIN$credit_in_millions)
+RMSE(HOLDOUT$credit_in_millions,preds$.mean)
 
 
 ## The RMSE for our non transformed predictions is 3.79. This means that for each individual prediction, 
