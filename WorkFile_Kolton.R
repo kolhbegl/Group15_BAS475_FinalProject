@@ -79,3 +79,67 @@ rmse(holdout$credit_in_millions, y_pred$.mean)
 Empire_Credits %>% model(
   lmodel = TSLM(credit_in_millions~Month)) %>% 
   forecast(h=12)
+
+####################################################
+
+Empire_Credits %>% 
+  mutate(Credit_Diff = difference(credit_in_millions)) -> Empire_Credits2
+
+
+Empire_Credits2 <- Empire_Credits2[-1,]
+
+Empire_Credits2 %>% 
+  gg_tsdisplay(Credit_Diff)
+
+Empire_Credits2 %>% 
+  features(Credit_Diff, unitroot_kpss)
+
+Empire_Credits2 %>% 
+  autoplot(Credit_Diff)
+
+holdout2 <- Empire_Credits2 %>% 
+  filter(Month %in% c(tail(Empire_Credits2$Month, 12)))
+
+training2 <- Empire_Credits %>% 
+  filter(Month %in% c(head(Empire_Credits2$Month, 479)))
+
+training2 %>% 
+  stretch_tsibble(.init = 48, .step = 24) %>% 
+  model(
+        arima111110 = ARIMA(Credit_Diff ~ pdq(1,1,1) + PDQ(1,1,0)),
+        arima210 = ARIMA(Credit_Diff ~ pdq(2,1,0)),
+        arima110 = ARIMA(Credit_Diff ~ pdq(1,1,0)),
+        arima310 = ARIMA(Credit_Diff ~ pdq(3,1,0)),
+        arima111 = ARIMA(Credit_Diff ~ pdq(1,1,1)),
+        ETSmodel = ETS(Credit_Diff)) %>% 
+  forecast(h=12) %>% 
+  accuracy(training2) %>% 
+  arrange(RMSE)
+
+training2 %>% model(
+  ETSmodel = ETS(Credit_Diff)) -> bestfit
+
+report(bestfit)
+
+gg_tsresiduals(bestfit)
+
+bestfit %>% 
+  forecast(h=12) -> bestforecast
+
+
+pred <- bestfit %>% 
+  forecast(h=12)
+
+y_pred <- pred
+
+rmse(holdout2$Credit_Diff, y_pred$.mean)
+
+
+Empire_Credits2 %>% model(
+  ETSmodel = ETS(Credit_Diff)) %>% 
+  forecast(h=12)
+
+
+
+
+
