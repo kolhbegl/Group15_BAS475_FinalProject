@@ -45,6 +45,25 @@ training %>%
   forecast(h=12) %>% 
   accuracy(training) -> training_cv
 
+Empire_Credits %>% 
+  stretch_tsibble(.init = 48, .step = 24) %>% 
+  model(mean = MEAN(credit_in_millions),
+        NaiveM = NAIVE(credit_in_millions),
+        NaiveDrift = NAIVE(credit_in_millions~drift()),
+        lmodel = TSLM(credit_in_millions~Month),
+        arima111110 = ARIMA(credit_in_millions ~ pdq(1,1,1) + PDQ(1,1,0)),
+        arima210 = ARIMA(credit_in_millions ~ pdq(2,1,0)),
+        arima110 = ARIMA(credit_in_millions ~ pdq(1,1,0)),
+        arima310 = ARIMA(credit_in_millions ~ pdq(3,1,0)),
+        arima111 = ARIMA(credit_in_millions ~ pdq(1,1,1)),
+        ETSmodel = ETS(credit_in_millions),
+        
+        ) %>% 
+  forecast(h=12) %>% 
+  accuracy(Empire_Credits) %>% 
+  arrange(RMSE)
+
+
 
 training_cv %>% 
   arrange(RMSE)
@@ -52,7 +71,8 @@ training_cv %>%
 #ETS appears to be the best 
 
 training %>% model(
-  lmodel = TSLM(credit_in_millions~Month)) -> bestfit
+  NaiveDrift = NAIVE(credit_in_millions~drift())
+  ) -> bestfit
 
 report(bestfit)
 
@@ -77,8 +97,10 @@ rmse <- function(y_actual, y_pred) {
 rmse(holdout$credit_in_millions, y_pred$.mean)
 
 Empire_Credits %>% model(
-  lmodel = TSLM(credit_in_millions~Month)) %>% 
+  NaiveDrift = NAIVE(credit_in_millions~drift())
+             ) %>% 
   forecast(h=12)
+
 
 ####################################################
 
