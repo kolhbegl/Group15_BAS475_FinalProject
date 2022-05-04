@@ -1,6 +1,8 @@
 library(fpp3)
 library(feasts)
 library(lubridate)
+library(ggplot2)
+library(ggeasy)
 
 Credits <- read.csv("credit.csv")
 
@@ -79,11 +81,14 @@ report(bestfit)
 gg_tsresiduals(bestfit)
 
 bestfit %>% 
-  forecast(h=12) -> bestforecast
+  forecast(h=24) -> bestforecast
 
 training %>% 
-  autoplot(credit_in_millions)+
-  autolayer(bestforecast)
+  autoplot(credit_in_millions, color= "black")+
+  autolayer(bestforecast)+
+  labs(title = "NAIVE Drift Forecast")+
+  ggeasy::easy_center_title()+
+  ggeasy::easy_all_text_colour(colour = "blue")
 
 pred <- bestfit %>% 
   forecast(h=12)
@@ -99,7 +104,7 @@ rmse(holdout$credit_in_millions, y_pred$.mean)
 Empire_Credits %>% model(
   NaiveDrift = NAIVE(credit_in_millions~drift())
              ) %>% 
-  forecast(h=12)
+  forecast(h=12) -> Predictions
 
 
 ####################################################
@@ -159,9 +164,8 @@ rmse(holdout2$Credit_Diff, y_pred$.mean)
 
 Empire_Credits2 %>% model(
   ETSmodel = ETS(Credit_Diff)) %>% 
-  forecast(h=12)
+  forecast(h=12) 
 
 
 
-
-
+write.csv(Predictions,file = "predictions.csv")
